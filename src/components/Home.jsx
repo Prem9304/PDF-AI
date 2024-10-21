@@ -4,10 +4,15 @@ import { auth, storage, db } from '../firebase-config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
+import axios from 'axios';
+import * as pdfjs from 'pdfjs-dist';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const Home = () => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [subjects] = useState(['Math', 'Science', 'History']);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,18 +21,67 @@ const Home = () => {
 
   const loadUserFiles = async () => {
     if (!auth.currentUser) return;
-    
+
     const q = query(
       collection(db, 'documents'),
       where('userId', '==', auth.currentUser.uid)
     );
-    
+
     const querySnapshot = await getDocs(q);
     const userFiles = [];
     querySnapshot.forEach((doc) => {
       userFiles.push({ id: doc.id, ...doc.data() });
     });
     setFiles(userFiles);
+  };
+
+  const extractTextFromPDF = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(item => item.str).join(' ');
+    }
+    return text;
+  };
+
+  const classifyPDFSubject = async (text) => {
+    const prompt = `Classify the following text into one of these subjects: ${subjects.join(', ')}.\n\nText: ${text}`;
+    const apiKey = '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';
+
+    try {
+      const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+        model: "mixtral-8x7b-32768",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('API Response:', response.data.choices[0].message.content.trim());
+      return response.data.choices[0].message.content.trim();
+    } catch (error) {
+      console.error("Error classifying the document:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error setting up request:", error.message);
+      }
+      return "Uncategorized";
+    }
   };
 
   const handleFileUpload = async (event) => {
@@ -42,13 +96,15 @@ const Home = () => {
       const storageRef = ref(storage, `documents/${auth.currentUser.uid}/${file.name}`);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
+
+      const pdfText = await extractTextFromPDF(file);
+      const subject = await classifyPDFSubject(pdfText.substring(0, 1000)); // Use first 1000 characters
       
-      // Add document metadata to Firestore
       await addDoc(collection(db, 'documents'), {
         userId: auth.currentUser.uid,
         name: file.name,
         url: url,
-        subject: 'Pending Classification', // This would be updated by AI
+        subject: subject || 'Uncategorized',
         uploadedAt: new Date().toISOString(),
       });
 

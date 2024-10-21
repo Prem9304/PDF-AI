@@ -10,6 +10,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.7",
     "cors-anywhere": "^0.4.4",
     "firebase": "^10.14.1",
     "pdfjs-dist": "^3.4.120",
