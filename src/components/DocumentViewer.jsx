@@ -42,7 +42,7 @@ const DocumentViewer = () => {
       setDocument(documentData);
 
       const storage = getStorage();
-      const fileRef = ref(storage, `documents/${auth.currentUser.uid}/${documentData.name}`);
+      const fileRef = ref(storage, `documents/${auth.currentUser.uid}/${documentData.subject}/${documentData.name}`);
       const url = await getDownloadURL(fileRef);
       setPdfUrl(url);
       setError(null);

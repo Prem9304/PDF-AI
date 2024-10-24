@@ -5,14 +5,14 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCSwHnNB5YMHtfPlOUQ3kSoN685Hi4raBM",
-    authDomain: "chatsitee.firebaseapp.com",
-    projectId: "chatsitee",
-    storageBucket: "chatsitee.appspot.com",
-    messagingSenderId: "926728879772",
-    appId: "1:926728879772:web:5a53719c9da1a4c6a07759",
-    measurementId: "G-27F28MWQ00"
-  };
+  apiKey: "AIzaSyDegNXneqHIx9XgE2zAabAQ1mr1VrMP7Ic",
+  authDomain: "project-71c88.firebaseapp.com",
+  projectId: "project-71c88",
+  storageBucket: "project-71c88.appspot.com",
+  messagingSenderId: "716798835109",
+  appId: "1:716798835109:web:e945ef9dc8d0d0119e104c",
+  measurementId: "G-MMMX2050HE"
+};
   
   
 
