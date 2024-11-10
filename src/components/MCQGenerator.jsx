@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // Import the local generateMCQs function directly
-import generateMCQs from './mcq-generator';
+import { generateMCQs } from './document-utils';
 
 const MCQGenerator = ({ pdfContent, onMCQsGenerated }) => {
   const [generating, setGenerating] = useState(false);
