@@ -5,6 +5,7 @@ import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } f
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { auth, storage, db } from "../firebase-config";
+import { Timestamp } from "firebase/firestore";
 
 // Firebase configuration
 
@@ -49,7 +50,11 @@ const MultiLLMChat = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (user) {
-        const q = query(collection(db, `users/${user.uid}/chats`), orderBy('createdAt', 'desc'), limit(10));
+        const q = query(
+          collection(db, `chats`),
+          orderBy('createdAt', 'desc'),
+          limit(10)
+        );
         onSnapshot(q, (querySnapshot) => {
           const chats = [];
           querySnapshot.forEach((doc) => {
@@ -59,9 +64,11 @@ const MultiLLMChat = () => {
         });
       }
     });
-
+  
+    // Cleanup the listener on component unmount
     return () => unsubscribe();
   }, []);
+  
 
   // Function to handle sending messages
   const handleSendMessage = async () => {
@@ -130,11 +137,11 @@ const MultiLLMChat = () => {
 
         // Save chat to Firebase
         if (user) {
-          await addDoc(collection(db, `users/${user.uid}/chats`), {
+          await addDoc(collection(db, `chats`), {
             provider: selectedProvider,
             model: selectedModel,
             history: newChatHistory,
-            createdAt: new Date()
+            createdAt: Timestamp.fromDate(new Date()),
           });
         }
       } else {
