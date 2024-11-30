@@ -10,7 +10,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { DocumentProcessor } from './document-utils';
-
+const name = "ritik"
 const DocumentViewer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
